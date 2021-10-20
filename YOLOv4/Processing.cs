@@ -78,7 +78,7 @@ namespace YOLOv4
             IReadOnlyList<YoloV4Result> results = null;
             return await Task.Factory.StartNew(() =>
             {
-                //Check status of the cancellationToken 
+                //Check status of the cancellationToken
                 if (!cancellationTokenSource.Token.IsCancellationRequested)
                 {
                     using (var bitmap = new Bitmap(Image.FromFile(Path.Combine(imageFolder, fileName))))
