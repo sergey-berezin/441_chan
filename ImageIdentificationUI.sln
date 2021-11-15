@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31702.278
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageIdentificationUI", "ImageIdentificationUI\ImageIdentificationUI.csproj", "{B8138509-B863-4C38-ADE2-44D2414FC32E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D8D65730-1BA0-489D-AAE4-C97433146856} = {D8D65730-1BA0-489D-AAE4-C97433146856}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YOLOv4", "YOLOv4\YOLOv4.csproj", "{D8D65730-1BA0-489D-AAE4-C97433146856}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B8138509-B863-4C38-ADE2-44D2414FC32E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8138509-B863-4C38-ADE2-44D2414FC32E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8138509-B863-4C38-ADE2-44D2414FC32E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8138509-B863-4C38-ADE2-44D2414FC32E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8D65730-1BA0-489D-AAE4-C97433146856}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8D65730-1BA0-489D-AAE4-C97433146856}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8D65730-1BA0-489D-AAE4-C97433146856}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8D65730-1BA0-489D-AAE4-C97433146856}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8F1AD86D-E2A2-4EC5-A415-1A732FBD11E0}
+	EndGlobalSection
+EndGlobal
