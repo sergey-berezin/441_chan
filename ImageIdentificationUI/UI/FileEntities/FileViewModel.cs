@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.IO;
+
 
 namespace ImageIdentificationUI.UI.FileEntities
 {
@@ -9,7 +7,7 @@ namespace ImageIdentificationUI.UI.FileEntities
     {
         public FileViewModel(string name) : base(name) { }
 
-        public FileViewModel(FileInfo fileInfo) : base(fileInfo.Name) =>
+        public FileViewModel(FileInfo fileInfo) : base(fileInfo.Name) => 
             FullName = fileInfo.FullName;
     }
 }

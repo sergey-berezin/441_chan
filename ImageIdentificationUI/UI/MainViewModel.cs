@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Windows.Threading;
 using System.ComponentModel;
 using ImageIdentificationUI.UI.Commands;
-using ImageIdentificationUI.UI.History;
 using ImageIdentificationUI.UI.FileEntities;
 using ImageIdentificationUI.UI.Collections;
 using YOLOv4;
@@ -18,16 +17,13 @@ namespace ImageIdentificationUI.UI
     public class MainViewModel : BaseViewModel
     {
         private Result _extendedInfo = null;
+        public string Path;
 
         public MainViewModel()
         {
             Dispatcher = Dispatcher.CurrentDispatcher;
-            History = new DirectoryHistory("Please select the path");
             ImagesList = new ImagesCollection();
             RecognitionResults = new Dictionary<string, Result>();
-            SpecifiedCategories = new UniqueCategoriesObservable();
-
-            EntitiesList = new ObservableCollection<FileEntityViewModel>();
 
             StartProcess = new AsyncCommand(Start, CanStart);
             CancelProcess = new AsyncCommand(Cancel, CanCancel);
@@ -37,12 +33,7 @@ namespace ImageIdentificationUI.UI
             ImagesList.PropertyChanged += CanStartChanged;
         }
 
-
-        public ObservableCollection<FileEntityViewModel> EntitiesList { get; set; }
-
         public Dispatcher Dispatcher { get; set; }
-
-        public DirectoryHistory History { get; }
 
         public ImagesCollection ImagesList { get; set; }
 
@@ -61,8 +52,6 @@ namespace ImageIdentificationUI.UI
             }
         }
 
-        public UniqueCategoriesObservable SpecifiedCategories { get; set; }
-
 
         public AsyncCommand StartProcess { get; }
 
@@ -70,14 +59,11 @@ namespace ImageIdentificationUI.UI
 
         public AsyncCommand ShowExtendedInfo { get; }
 
-        public AsyncCommand SelectCategory { get; }
-
 
         private async void Start(object parameter)
         {
             Processing processing = new Processing();
-            string imagesPath = History.CurrentDirectory.CurrentNode.FullName;
-            await foreach (var Result in processing.ProcessImagesAsync(imagesPath))
+            await foreach (var Result in processing.ProcessImagesAsync(Path))
             {
                 Dispatcher?.Invoke(() =>
                 {
@@ -113,38 +99,13 @@ namespace ImageIdentificationUI.UI
 
         private bool CanShowExtraInfo(object parameter) => parameter != null;
 
-
-        public bool SelectSpecified(object argsItem)
+        public void OpenDirectory(string Path)
         {
-            var item = (KeyValuePair<string, ImageViewModel>)argsItem;
-            bool result = true;
-            if (SpecifiedCategories != null && SpecifiedCategories.Count > 0)
-            {
-                result = false;
-                foreach (string category in SpecifiedCategories)
-                {
-                    if (RecognitionResults.ContainsKey(item.Key) &&
-                        RecognitionResults[item.Key].Categories.Select(cat => cat.ObjName).Contains(category))
-                    {
-                        result = true;
-                        break;
-                    }
-                }
-            }
-            return result;
-        }
-
-
-        public void OpenDirectory(DirectoryViewModel directory)
-        {
-            EntitiesList.Clear();
             ImagesList.Clear();
             RecognitionResults.Clear();
             ExtendedInfo = null;
 
-            foreach (var directoryName in Directory.GetDirectories(directory.FullName))
-                EntitiesList.Add(new DirectoryViewModel(new DirectoryInfo(directoryName)));
-            foreach (var fileName in Directory.GetFiles(directory.FullName))
+            foreach (var fileName in Directory.GetFiles(Path))
             {
                 var fileInfo = new FileInfo(fileName);
                 var extensions = new ObservableCollection<string>() { ".png", ".jpg" };
@@ -153,10 +114,12 @@ namespace ImageIdentificationUI.UI
                     var img = new ImageViewModel(fileInfo);
                     ImagesList.Add(fileInfo.Name, img);
                     OnPropertyChanged(nameof(ImagesList));
-                    EntitiesList.Add(img);
                 }
                 else
-                    EntitiesList.Add(new FileViewModel(fileInfo));
+                {
+                    System.Windows.Forms.MessageBox.Show("No picture file is found in the directory, please select the directory again!", "Error");
+                    return;
+                }
             }
         }
 

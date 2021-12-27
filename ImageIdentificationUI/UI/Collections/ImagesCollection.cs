@@ -3,7 +3,6 @@ using System.Collections.Specialized;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using ImageIdentificationUI.UI.FileEntities;
 
 namespace ImageIdentificationUI.UI.Collections
@@ -13,7 +12,6 @@ namespace ImageIdentificationUI.UI.Collections
     {
 
         private bool isEmpty;
-
 
         public ImagesCollection() : base() => IsEmpty = true;
 
@@ -35,7 +33,6 @@ namespace ImageIdentificationUI.UI.Collections
         {
             get => Values.ToList()[index];
         }
-
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
         public event PropertyChangedEventHandler PropertyChanged;
@@ -63,8 +60,6 @@ namespace ImageIdentificationUI.UI.Collections
             }
             return clone;
         }
-
-        public void SimulateCollectionChanged() => OnCollectionChanged();
 
         private void OnCollectionChanged()
         {

@@ -18,8 +18,7 @@
         </Style>
 
         <CollectionViewSource x:Key="key_FilteredImagesList" 
-                              Source="{Binding ImagesList}"                               
-                              Filter="SelectOnlySpecified">
+                              Source="{Binding ImagesList}">
         </CollectionViewSource>
     </Window.Resources>
 
@@ -27,7 +26,7 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
-            <RowDefinition/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <Grid x:Name="Path" Grid.Row="0">
@@ -53,8 +52,8 @@
                         BorderBrush="Black" 
                         MaxHeight="30">
                     <TextBlock x:Name="Link"
-                               DataContext="{Binding History}"
-                               Text="{Binding CurrentDirectory}" 
+                               DataContext="{Binding Path}"
+                               Text="{Binding DirectoryViewModel}" 
                                Margin="5" FontSize="20"
                                VerticalAlignment="Center"/>
                 </Border>
@@ -65,14 +64,15 @@
                         VerticalAlignment="Center" 
                         HorizontalAlignment="Center" 
                         MaxHeight="30" Height="30" Width="150" 
-                        Click="Button_Click"/>
+                        Click="Button_Click"
+                        />
             </Grid>
         </Grid>
 
-        <Grid x:Name="Data" Grid.Row="1">
+        <Grid x:Name="Data" Grid.Row="1" HorizontalAlignment="Left" Width="1600">
 
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="450"/>
                 <ColumnDefinition Width="200"/>
             </Grid.ColumnDefinitions>
@@ -84,13 +84,7 @@
                 <ListBox x:Name="ImagesListBox" 
                          Grid.Row="0"
                          ItemsSource="{Binding Source={StaticResource key_FilteredImagesList}}"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel/>
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.ColumnSpan="2">
 
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -117,7 +111,7 @@
                   Margin="10,10,10,10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="30"/>
-                    <RowDefinition/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Row="0" 
@@ -151,14 +145,14 @@
                   Margin="10,10,10,10">
 
                 <Grid x:Name="Buttons"
-                      Margin="5,5,5,5" Grid.Row="3">
+                      Margin="5,5,5,5" Grid.Row="1">
 
                     <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <Button x:Name="StartRecognition" 
+                    <Button x:Name="Start" 
                             Grid.Row="0" 
                             Margin="5,5,5,100" 
                             Content="Start"
@@ -166,9 +160,8 @@
                             FontWeight="Bold"
                             Foreground="Green"
                             VerticalAlignment="Bottom" 
-                            ToolTip="Start Recognition"
                             Command="{Binding StartProcess}" Height="100"/>
-                    <Button x:Name="CancelRecognition" 
+                    <Button x:Name="Cancel" 
                             Grid.Row="1" 
                             Margin="5,100,5,5" 
                             Content="Cancel"
@@ -176,8 +169,8 @@
                             FontWeight="Bold"
                             Foreground="Red"
                             VerticalAlignment="Top" 
-                            ToolTip="Cancel Recognition"
-                            Command="{Binding CancelProcess}" Height="100"/>
+                            Height="100"
+                            Command="{Binding CancelProcess}" />
                 </Grid>
             </Grid>
         </Grid>

@@ -2,8 +2,6 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ImageIdentificationUI.UI.Commands
 {
@@ -61,11 +59,9 @@ namespace ImageIdentificationUI.UI.Commands
             }
         }
 
-
         public event EventHandler CanExecuteChanged;
 
         public event PropertyChangedEventHandler PropertyChanged;
-
 
         public void RaiseCanExecuteChanged()
         {
@@ -76,7 +72,6 @@ namespace ImageIdentificationUI.UI.Commands
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
 
         public async void Execute(object parameter)
         {
@@ -94,7 +89,6 @@ namespace ImageIdentificationUI.UI.Commands
             CanExecute = targetCanExecuteMethod?.Invoke(parameter) ?? targetExecuteMethod != null;
             return CanExecute && !IsExecution;
         }
-
 
         public void Cancel()
         {

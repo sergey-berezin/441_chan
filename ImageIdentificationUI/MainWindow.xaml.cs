@@ -13,7 +13,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ImageIdentificationUI.UI;
-using ImageIdentificationUI.UI.FileEntities;
 using System.Windows.Forms;
 using System.IO;
 
@@ -34,9 +33,6 @@ namespace ImageIdentificationUI
             DataContext = mainViewModel;
         }
 
-        private void SelectOnlySpecified(object sender, FilterEventArgs args) =>
-            args.Accepted = mainViewModel.SelectSpecified(args.Item);
-
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Forms.FolderBrowserDialog folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -47,9 +43,8 @@ namespace ImageIdentificationUI
                 System.Windows.Forms.MessageBox.Show("Address not selected, please select again.", "Error");
                 return;
             }
-            DirectoryViewModel Path = new DirectoryViewModel(new DirectoryInfo(folderBrowserDialog.SelectedPath));
-            mainViewModel.History.Add(Path);
-            mainViewModel.OpenDirectory(Path);
+            mainViewModel.Path = folderBrowserDialog.SelectedPath;
+            mainViewModel.OpenDirectory(folderBrowserDialog.SelectedPath);
         }
     }
 }

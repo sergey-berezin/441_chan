@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ImageIdentificationUI.UI.FileEntities
+﻿namespace ImageIdentificationUI.UI.FileEntities
 {
     public abstract class FileEntityViewModel : BaseViewModel
     {
@@ -13,3 +9,4 @@ namespace ImageIdentificationUI.UI.FileEntities
         public string FullName { get; set; }
     }
 }
+
