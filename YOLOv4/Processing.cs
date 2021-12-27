@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace YOLOv4
 {
-    public class Processing : IDisposable
+    public class Processing
     {
         const string ModelPath = @"C:\Users\chenr\Desktop\models-master\vision\object_detection_segmentation\yolov4\model\yolov4.onnx";
 
@@ -22,55 +22,53 @@ namespace YOLOv4
 
         static readonly string[] classesNames = new string[] { "person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat", "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "sofa", "pottedplant", "bed", "diningtable", "toilet", "tvmonitor", "laptop", "mouse", "remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush" };
 
-        public BlockingCollection<Result> resultBuff = null;
         public TransformerChain<OnnxTransformer> model = null;
-        public CancellationTokenSource cancellationTokenSource = null;
+        public CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
-        public Processing()
+        public IEnumerable<Results> ProcessImagesAsync(string imageFolder)
         {
-            resultBuff = new BlockingCollection<Result>();
-            model = createModel(ModelPath);
-            cancellationTokenSource = new CancellationTokenSource();
-        }
+            List<string> folderPath = new(Directory.GetFiles(imageFolder));
+            List<Task<IReadOnlyList<YoloV4Result>>> tasks = new();
+            var model = createModel(ModelPath);
 
-        public async IAsyncEnumerable<Result> ProcessImagesAsync(string imageFolder)
-        {
-            Directory.CreateDirectory(imageOutputFolder);
-
-            var folderPath = Directory.GetFiles(imageFolder);
-            List<Task<Result>> tasks = new List<Task<Result>>();
-            foreach (var imagePath in folderPath)
+            foreach (string imagePath in folderPath)
             {
                 if (!cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    Task<Result> iamge = imagePredict(imagePath);
+                    Task<IReadOnlyList<YoloV4Result>> iamge = imagePredict(imagePath, model);
                     tasks.Add(iamge);
                 }
                 else
                     break;
             }
 
-            Result imageResult;
-            while (tasks.Count > 0 && !cancellationTokenSource.Token.IsCancellationRequested)
+            while (tasks.Count > 0 && !cancellationTokenSource.IsCancellationRequested)
             {
                 for (int i = 0; i < tasks.Count; i++)
                 {
-                    imageResult = resultBuff.Take();
-                    await Task.WhenAny(tasks);
-                    if (imageResult != null && !imageResult.IsEmpty())
-                        yield return imageResult;
-                    tasks.Remove(tasks[i]);
+                    Task.WhenAny(tasks.ToArray());
+                    yield return new Results(tasks[i].Result, folderPath[i]);
+                    tasks.RemoveAt(i);
+                    folderPath.RemoveAt(i);
                 }
             }
         }
-        public async Task<Result> imagePredict(string imagePath)
+
+        public async Task<IReadOnlyList<YoloV4Result>> imagePredict(string imagePath, TransformerChain<OnnxTransformer> model)
         {
             return await Task.Factory.StartNew(() =>
             {
-                var imageResult = startPredict(imagePath);
-                
-                resultBuff.Add(imageResult);
-                return imageResult;
+                string imageFolder = imagePath.Substring(0, imagePath.LastIndexOf(Path.DirectorySeparatorChar));
+                MLContext mlContext = new MLContext();
+                PredictionEngine<YoloV4BitmapData, YoloV4Prediction> predictionEngine = mlContext.Model.CreatePredictionEngine<YoloV4BitmapData, YoloV4Prediction>(model);
+
+                using (var bitmap = new Bitmap(Image.FromFile(imagePath)))
+                {
+                    // predict
+                    YoloV4Prediction predict = predictionEngine.Predict(new YoloV4BitmapData() { Image = bitmap });
+                    var results = predict.GetResults(classesNames, 0.3f, 0.7f);
+                    return results;
+                }
             });
         }
 
@@ -78,57 +76,6 @@ namespace YOLOv4
         {
             cancellationTokenSource.Cancel();
         }
-
-        public void Dispose() 
-        {
-            if (resultBuff != null)
-                resultBuff.Dispose();
-        }
-
-        public Result startPredict(string imagePath)
-        {
-            List<YoloV4Result> imageObjects = new List<YoloV4Result>();
-            IReadOnlyList<YoloV4Result> results = null;
-            var bitmap = new Bitmap(Image.FromFile(imagePath));
-            string imageName = imagePath.Substring(imagePath.LastIndexOf(Path.DirectorySeparatorChar) + 1);
-            Result imageResult = null;
-
-            // Create prediction engine
-            MLContext mlContext = new MLContext();
-            PredictionEngine<YoloV4BitmapData, YoloV4Prediction> predictionEngine = mlContext.Model.CreatePredictionEngine<YoloV4BitmapData, YoloV4Prediction>(model);
-            // predict
-            YoloV4Prediction predict = predictionEngine.Predict(new YoloV4BitmapData() { Image = bitmap });
-            results = predict.GetResults(classesNames, 0.3f, 0.7f);
-
-            using (var g = Graphics.FromImage(bitmap))
-            {
-                foreach (var res in results)
-                {
-                    // Stop drawing if cancellationToken is cancelled
-                    if (!cancellationTokenSource.Token.IsCancellationRequested)
-                    {
-                        // draw predictions
-                        var x1 = res.BBox[0];
-                        var y1 = res.BBox[1];
-                        var x2 = res.BBox[2];
-                        var y2 = res.BBox[3];
-                        g.DrawRectangle(Pens.Red, x1, y1, x2 - x1, y2 - y1);
-                        using (var brushes = new SolidBrush(Color.FromArgb(50, Color.Red)))
-                        {
-                            g.FillRectangle(brushes, x1, y1, x2 - x1, y2 - y1);
-                        }
-
-                        g.DrawString(res.Label + " " + res.Confidence.ToString("0.00"),
-                                        new Font("Arial", 12), Brushes.Blue, new PointF(x1, y1));
-                        imageObjects.Add(res);
-                    }
-                }
-            }
-            imageResult = new Result(results, imageName, bitmap);
-
-            return imageResult;
-        }
-
 
         public TransformerChain<OnnxTransformer> createModel(string modelPath)
         {
@@ -161,5 +108,17 @@ namespace YOLOv4
             var model = pipeline.Fit(mlContext.Data.LoadFromEnumerable(new List<YoloV4BitmapData>()));
             return model;
         }
+    }
+
+    public class Results
+    {
+        public Results(IReadOnlyList<YoloV4Result> res, string fileName)
+        {
+            objectList = new List<YoloV4Result>(res);
+            ImageName = fileName;
+        }
+
+        public List<YoloV4Result> objectList { get; }
+        public string ImageName { get; }
     }
 }
